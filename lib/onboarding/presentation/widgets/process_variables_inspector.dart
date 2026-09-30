@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../bpm_framework/bpm_framework.dart';
+import '../../data/mock/mock_bpm_service.dart';
 import '../../data/models/onboarding_variables.dart';
 
 /// Shows the raw process variables carried by the current instance — the
@@ -45,6 +46,41 @@ class ProcessVariablesInspector extends StatelessWidget {
           leading: Icon(Icons.data_object_rounded, color: Theme.of(context).colorScheme.primary),
           childrenPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
           children: [for (final entry in entries) _VariableRow(entry: entry)],
+        ),
+      ),
+    );
+  }
+}
+
+/// Shows the exact JSON that last crossed `MockBpmService`'s simulated
+/// wire — the real "data source" behind every screen in this demo. This
+/// is not derived from `process` in memory: it is the literal string
+/// `jsonEncode` produced and `jsonDecode` then parsed back from, so what's
+/// on screen here is byte-for-byte what a real HTTP response body would
+/// have contained.
+class ProcessRawJsonInspector extends StatelessWidget {
+  const ProcessRawJsonInspector({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final json = MockBpmService.lastWireJson;
+
+    return Card(
+      child: Theme(
+        data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+        child: ExpansionTile(
+          title: const Text('Réponse JSON brute (simulée)', style: TextStyle(fontWeight: FontWeight.w600)),
+          subtitle: const Text(
+            "Ce que MockBpmService a réellement encodé/décodé en JSON, comme un vrai client HTTP.",
+          ),
+          leading: Icon(Icons.code_rounded, color: Theme.of(context).colorScheme.primary),
+          childrenPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+          children: [
+            if (json.isEmpty)
+              const Text('—')
+            else
+              SelectableText(json, style: const TextStyle(fontFamily: 'monospace', fontSize: 11)),
+          ],
         ),
       ),
     );

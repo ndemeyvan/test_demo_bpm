@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:test_demo_bpm/bpm_framework/bpm_framework.dart';
+import 'package:test_demo_bpm/onboarding/data/mock/mock_bpm_service.dart';
 import 'package:test_demo_bpm/onboarding/data/models/onboarding_task_keys.dart';
 import 'package:test_demo_bpm/onboarding/data/models/onboarding_variables.dart';
 import 'package:test_demo_bpm/onboarding/data/repositories/onboarding_process_repository.dart';
@@ -166,6 +167,31 @@ void main() {
       } on ProcessError<Process<OnboardingVariables>> catch (e) {
         expect(e.errorCode, 'com-task-0002');
       }
+    });
+
+    test('every repository call actually round-trips through JSON', () async {
+      final repo = OnboardingProcessRepository();
+
+      final started = await repo.startProcess();
+
+      // `MockBpmService` doesn't just hand back the engine's Dart object —
+      // it encodes it to JSON and parses that JSON back. `lastWireJson` is
+      // the literal string that crossed that boundary.
+      expect(MockBpmService.lastWireJson, isNotEmpty);
+      expect(MockBpmService.lastWireJson, contains('"processInstanceId"'));
+      expect(MockBpmService.lastWireJson, contains('"applicant_info"'));
+      expect(MockBpmService.lastWireJson, contains('"form"'));
+
+      // And `Process.toJson`/`Process.fromJson` round-trip on their own,
+      // independent of the mock, without losing the task's form metadata.
+      final json = started.toJson((vars) => vars.toJson());
+      final decoded = Process.fromJson<OnboardingVariables>(json, OnboardingVariables.fromJson);
+
+      expect(decoded.processInstanceId, started.processInstanceId);
+      expect(decoded.activeTaskDefinitionKey, started.activeTaskDefinitionKey);
+      expect(decoded.activeTask.first.form, isNotNull);
+      expect(decoded.activeTask.first.form!.fields, hasLength(4));
+      expect(decoded.activeTask.first.form!.fields.last.options, hasLength(2));
     });
   });
 }

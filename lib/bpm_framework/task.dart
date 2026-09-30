@@ -38,4 +38,41 @@ class Task<PV extends Variable> {
     this.type = TaskType.userTask,
     this.form,
   });
+
+  /// [variablesToJson] serializes [processVariables] — a generic `Task<PV>`
+  /// has no way to know how to turn an arbitrary `PV` into JSON by itself,
+  /// so the caller (ultimately the concrete process, e.g.
+  /// `OnboardingVariables.toJson`) provides it.
+  Map<String, dynamic> toJson(Map<String, dynamic> Function(PV) variablesToJson) {
+    return {
+      'id': id,
+      'taskDefinitionKey': taskDefinitionKey,
+      'name': name,
+      'description': description,
+      'processInstanceId': processInstanceId,
+      'createTime': createTime.toIso8601String(),
+      'processVariables': variablesToJson(processVariables),
+      'type': type.name,
+      'form': form?.toJson(),
+    };
+  }
+
+  static Task<PV> fromJson<PV extends Variable>(
+    Map<String, dynamic> json,
+    PV Function(Map<String, dynamic>) variablesFromJson,
+  ) {
+    return Task<PV>(
+      id: json['id'] as String,
+      taskDefinitionKey: json['taskDefinitionKey'] as String,
+      name: json['name'] as String,
+      description: json['description'] as String?,
+      processInstanceId: json['processInstanceId'] as String,
+      createTime: DateTime.parse(json['createTime'] as String),
+      processVariables: variablesFromJson(json['processVariables'] as Map<String, dynamic>),
+      type: TaskType.values.byName(json['type'] as String),
+      form: json['form'] != null
+          ? FormDefinition.fromJson(json['form'] as Map<String, dynamic>)
+          : null,
+    );
+  }
 }

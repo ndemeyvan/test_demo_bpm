@@ -69,6 +69,10 @@ class _OnboardingProcessView extends StatelessWidget {
                       OnboardingTaskSwitcher(state: state),
                       const SizedBox(height: 20),
                       ProcessVariablesInspector(process: state.process),
+                      const SizedBox(height: 12),
+                      // Not `const`: it must rebuild on every state change to
+                      // pick up the latest `MockBpmService.lastWireJson`.
+                      ProcessRawJsonInspector(),
                     ],
                   ),
                 ),

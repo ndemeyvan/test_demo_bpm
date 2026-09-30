@@ -71,6 +71,47 @@ class OnboardingVariables extends Variable {
       autoApproved: autoApproved ?? this.autoApproved,
     );
   }
+
+  /// This is the JSON shape `MockBpmService` actually sends "over the
+  /// wire" — see `MockBpmService._throughWire`. A real, HTTP-backed
+  /// `BpmService` would produce/consume the exact same shape.
+  Map<String, dynamic> toJson() => {
+        'applicantName': applicantName,
+        'applicantEmail': applicantEmail,
+        'requestedAmount': requestedAmount,
+        'channel': channel,
+        'idDocumentUploaded': idDocumentUploaded,
+        'idDocumentName': idDocumentName,
+        'proofOfAddressUploaded': proofOfAddressUploaded,
+        'proofOfAddressName': proofOfAddressName,
+        'riskScore': riskScore,
+        'reviewDecision': reviewDecision,
+        'rejectionReason': rejectionReason,
+        'autoApproved': autoApproved,
+      };
+
+  factory OnboardingVariables.fromJson(Map<String, dynamic> json) {
+    return OnboardingVariables(
+      applicantName: json['applicantName'] as String?,
+      applicantEmail: json['applicantEmail'] as String?,
+      requestedAmount: _toNum(json['requestedAmount']),
+      channel: json['channel'] as String?,
+      idDocumentUploaded: json['idDocumentUploaded'] as bool?,
+      idDocumentName: json['idDocumentName'] as String?,
+      proofOfAddressUploaded: json['proofOfAddressUploaded'] as bool?,
+      proofOfAddressName: json['proofOfAddressName'] as String?,
+      riskScore: _toNum(json['riskScore']),
+      reviewDecision: json['reviewDecision'] as String?,
+      rejectionReason: json['rejectionReason'] as String?,
+      autoApproved: json['autoApproved'] as bool?,
+    );
+  }
+}
+
+num? _toNum(dynamic value) {
+  if (value == null) return null;
+  if (value is num) return value;
+  return num.tryParse('$value');
 }
 
 extension OnboardingProcessX on Process<OnboardingVariables> {

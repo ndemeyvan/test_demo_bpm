@@ -75,6 +75,13 @@ voir `lib/onboarding/data/mock/mock_bpm_engine.dart`.
 - **Erreurs métier** — un formulaire incomplet est refusé par le moteur
   (`form-validation`), une tâche déjà traitée ailleurs est refusée aussi
   (`com-task-0002`), comme le ferait un vrai moteur BPM.
+- **Une vraie couche JSON comme source de données** — `MockBpmService` ne
+  se contente pas de renvoyer des objets Dart : il `jsonEncode` la réponse
+  du moteur, puis la `jsonDecode` et la re-parse (`Process.fromJson`),
+  exactement comme le ferait un client HTTP (Dio, `package:http`…) face à
+  une vraie API. L'écran affiche même ce JSON brut en direct (panneau
+  "Réponse JSON brute (simulée)"), pour le voir circuler réellement plutôt
+  que de le décrire.
 
 Volontairement **non couvert** (pour garder la démo lisible) : timers /
 échéances, sous-processus, tâches en boucle (multi-instance), événements
@@ -96,9 +103,12 @@ dans `MockBpmEngine.completeTask` et, si besoin, dans
   production, serait déployé comme diagramme `.bpmn` sur le moteur plutôt
   qu'écrit dans l'app.
 - `lib/onboarding/data/mock/mock_bpm_service.dart` — implémente le contrat
-  `BpmService` par-dessus le moteur mocké. Tout ce qui est au-dessus (bloc,
-  écrans) ne sait pas que c'est mocké : remplacer cette classe par une
-  implémentation HTTP suffirait à brancher un vrai backend.
+  `BpmService` par-dessus le moteur mocké, **en passant réellement par du
+  JSON** (`jsonEncode` puis `jsonDecode` + `Process.fromJson`) plutôt que
+  de renvoyer les objets du moteur tels quels. Tout ce qui est au-dessus
+  (bloc, écrans) ne sait pas que c'est mocké : remplacer cette classe par
+  une implémentation HTTP suffirait à brancher un vrai backend, sans
+  changer la forme des données.
 - `lib/onboarding/presentation/widgets/dynamic_form_view.dart` — le rendu
   **générique** d'un formulaire à partir de sa définition.
 - `lib/onboarding/presentation/widgets/onboarding_task_switcher.dart` —
