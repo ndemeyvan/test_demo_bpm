@@ -3,21 +3,24 @@ import '../../../bpm_framework/bpm_framework.dart';
 /// Process variables for `merchant_onboarding_demo`.
 ///
 /// These travel with the process instance from task to task: each task
-/// reads some of them (to pre-fill its screen) and writes some back when
-/// the user completes it. Numeric fields are typed `num?` — never
+/// reads some of them (to pre-fill its form) and writes some back when the
+/// user completes it. Numeric fields are typed `num?` — never
 /// `int?`/`double?` — because a BPM engine serializes numbers
 /// inconsistently depending on the last writer.
 class OnboardingVariables extends Variable {
   final String? applicantName;
   final String? applicantEmail;
   final num? requestedAmount;
+  final String? channel; // 'online' | 'agence'
 
-  final bool? documentUploaded;
-  final String? documentName;
+  final bool? idDocumentUploaded;
+  final String? idDocumentName;
+  final bool? proofOfAddressUploaded;
+  final String? proofOfAddressName;
 
-  /// Computed by the engine right after `upload_document` completes. The
-  /// applicant never sets this — it only exists to drive the exclusive
-  /// gateway that decides between auto-approval and `manual_review`.
+  /// Computed by the `risk_screening` service task. No screen ever sets
+  /// this — it only exists to drive the exclusive gateway that decides
+  /// between auto-approval and `manual_review`.
   final num? riskScore;
 
   final String? reviewDecision; // 'approved' | 'rejected'
@@ -28,8 +31,11 @@ class OnboardingVariables extends Variable {
     this.applicantName,
     this.applicantEmail,
     this.requestedAmount,
-    this.documentUploaded,
-    this.documentName,
+    this.channel,
+    this.idDocumentUploaded,
+    this.idDocumentName,
+    this.proofOfAddressUploaded,
+    this.proofOfAddressName,
     this.riskScore,
     this.reviewDecision,
     this.rejectionReason,
@@ -40,8 +46,11 @@ class OnboardingVariables extends Variable {
     String? applicantName,
     String? applicantEmail,
     num? requestedAmount,
-    bool? documentUploaded,
-    String? documentName,
+    String? channel,
+    bool? idDocumentUploaded,
+    String? idDocumentName,
+    bool? proofOfAddressUploaded,
+    String? proofOfAddressName,
     num? riskScore,
     String? reviewDecision,
     String? rejectionReason,
@@ -51,8 +60,11 @@ class OnboardingVariables extends Variable {
       applicantName: applicantName ?? this.applicantName,
       applicantEmail: applicantEmail ?? this.applicantEmail,
       requestedAmount: requestedAmount ?? this.requestedAmount,
-      documentUploaded: documentUploaded ?? this.documentUploaded,
-      documentName: documentName ?? this.documentName,
+      channel: channel ?? this.channel,
+      idDocumentUploaded: idDocumentUploaded ?? this.idDocumentUploaded,
+      idDocumentName: idDocumentName ?? this.idDocumentName,
+      proofOfAddressUploaded: proofOfAddressUploaded ?? this.proofOfAddressUploaded,
+      proofOfAddressName: proofOfAddressName ?? this.proofOfAddressName,
       riskScore: riskScore ?? this.riskScore,
       reviewDecision: reviewDecision ?? this.reviewDecision,
       rejectionReason: rejectionReason ?? this.rejectionReason,

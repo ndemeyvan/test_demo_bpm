@@ -10,33 +10,31 @@ final class StartOnboardingProcess extends OnboardingProcessEvent {
   const StartOnboardingProcess();
 }
 
-/// Completes the `applicant_info` user task.
-final class SubmitApplicantInfo extends OnboardingProcessEvent {
-  final String applicantName;
-  final String applicantEmail;
-  final num requestedAmount;
+/// Completes any user task generically.
+///
+/// The bloc doesn't need to know the shape of each task's form — it just
+/// forwards whatever `DynamicFormView` collected, the same way a real BPM
+/// client posts a task's form values without caring what they mean.
+/// [outcome] is which button the user pressed (a plain "submit" for a
+/// single-button form, or "approve"/"reject" for `manual_review`).
+final class SubmitTaskForm extends OnboardingProcessEvent {
+  final String taskDefinitionKey;
+  final String outcome;
+  final Map<String, dynamic> values;
 
-  const SubmitApplicantInfo({
-    required this.applicantName,
-    required this.applicantEmail,
-    required this.requestedAmount,
+  const SubmitTaskForm({
+    required this.taskDefinitionKey,
+    required this.outcome,
+    required this.values,
   });
 }
 
-/// Completes the `upload_document` user task.
-final class SubmitDocumentUpload extends OnboardingProcessEvent {
-  final String documentName;
+/// Advances a service task (no human input) once its simulated processing
+/// delay elapses — see `StepAutomaticProcessingView`.
+final class AdvanceAutomaticTask extends OnboardingProcessEvent {
+  final String taskDefinitionKey;
 
-  const SubmitDocumentUpload({required this.documentName});
-}
-
-/// Completes the `manual_review` user task with the compliance officer's
-/// decision — mirrors the "outcome" a BPMN user-task form submits.
-final class SubmitManualReviewDecision extends OnboardingProcessEvent {
-  final bool approved;
-  final String? reason;
-
-  const SubmitManualReviewDecision({required this.approved, this.reason});
+  const AdvanceAutomaticTask({required this.taskDefinitionKey});
 }
 
 /// Abandons the current instance and starts a fresh one.

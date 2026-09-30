@@ -1,7 +1,6 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../bpm_framework/bpm_framework.dart';
-import '../data/models/onboarding_task_keys.dart';
 import '../data/models/onboarding_variables.dart';
 import '../data/repositories/onboarding_process_repository.dart';
 
@@ -12,17 +11,16 @@ part 'onboarding_process_state.dart';
 ///
 /// It never contains screen logic — only the mapping between user actions
 /// (events) and BPM engine calls (`repository.startProcess` / `execTask`).
-/// The UI reacts to whatever `state.process.activeTaskDefinitionKey` is;
-/// see `OnboardingTaskSwitcher` for the other half of that mechanism.
+/// The UI reacts to whatever tasks are in `state.process.activeTask`; see
+/// `OnboardingTaskSwitcher` for the other half of that mechanism.
 class OnboardingProcessBloc extends Bloc<OnboardingProcessEvent, OnboardingProcessState> {
   final OnboardingProcessRepository repository;
 
   OnboardingProcessBloc({required this.repository})
       : super(const OnboardingProcessInitial()) {
     on<StartOnboardingProcess>(_onStart);
-    on<SubmitApplicantInfo>(_onSubmitApplicantInfo);
-    on<SubmitDocumentUpload>(_onSubmitDocumentUpload);
-    on<SubmitManualReviewDecision>(_onSubmitManualReviewDecision);
+    on<SubmitTaskForm>(_onSubmitTaskForm);
+    on<AdvanceAutomaticTask>(_onAdvanceAutomaticTask);
     on<RestartOnboardingProcess>(_onStart);
   }
 
@@ -34,8 +32,8 @@ class OnboardingProcessBloc extends Bloc<OnboardingProcessEvent, OnboardingProce
     await _run(emit, () => repository.startProcess());
   }
 
-  Future<void> _onSubmitApplicantInfo(
-    SubmitApplicantInfo event,
+  Future<void> _onSubmitTaskForm(
+    SubmitTaskForm event,
     Emitter<OnboardingProcessState> emit,
   ) async {
     emit(OnboardingProcessLoading(process: state.process));
@@ -43,19 +41,15 @@ class OnboardingProcessBloc extends Bloc<OnboardingProcessEvent, OnboardingProce
       emit,
       () => repository.execTask(
         processInstanceId: state.process!.processInstanceId,
-        taskInstanceId: _activeTaskId(OnboardingTaskKeys.applicantInfo),
-        outcome: 'submit',
-        body: {
-          'applicantName': event.applicantName,
-          'applicantEmail': event.applicantEmail,
-          'requestedAmount': event.requestedAmount,
-        },
+        taskInstanceId: _taskId(event.taskDefinitionKey),
+        outcome: event.outcome,
+        body: event.values,
       ),
     );
   }
 
-  Future<void> _onSubmitDocumentUpload(
-    SubmitDocumentUpload event,
+  Future<void> _onAdvanceAutomaticTask(
+    AdvanceAutomaticTask event,
     Emitter<OnboardingProcessState> emit,
   ) async {
     emit(OnboardingProcessLoading(process: state.process));
@@ -63,36 +57,21 @@ class OnboardingProcessBloc extends Bloc<OnboardingProcessEvent, OnboardingProce
       emit,
       () => repository.execTask(
         processInstanceId: state.process!.processInstanceId,
-        taskInstanceId: _activeTaskId(OnboardingTaskKeys.uploadDocument),
-        outcome: 'submit',
-        body: {'documentName': event.documentName},
-      ),
-    );
-  }
-
-  Future<void> _onSubmitManualReviewDecision(
-    SubmitManualReviewDecision event,
-    Emitter<OnboardingProcessState> emit,
-  ) async {
-    emit(OnboardingProcessLoading(process: state.process));
-    await _run(
-      emit,
-      () => repository.execTask(
-        processInstanceId: state.process!.processInstanceId,
-        taskInstanceId: _activeTaskId(OnboardingTaskKeys.manualReview),
-        outcome: event.approved ? 'approve' : 'reject',
-        body: {if (event.reason != null) 'reason': event.reason!},
+        taskInstanceId: _taskId(event.taskDefinitionKey),
+        outcome: 'auto',
+        body: const {},
       ),
     );
   }
 
   /// Every `execTask` call needs the id of the *current* active task, never
   /// a cached one — otherwise the engine rejects it (`com-task-0002`, see
-  /// `MockBpmEngine.completeTask`).
-  String _activeTaskId(String expectedTaskKey) {
+  /// `MockBpmEngine.completeTask`). With a parallel gateway, several tasks
+  /// can be active at once, so this looks the right one up by key.
+  String _taskId(String taskDefinitionKey) {
     final tasks = state.process?.activeTask ?? const [];
     for (final task in tasks) {
-      if (task.taskDefinitionKey == expectedTaskKey) return task.id;
+      if (task.taskDefinitionKey == taskDefinitionKey) return task.id;
     }
     return tasks.isNotEmpty ? tasks.first.id : '';
   }

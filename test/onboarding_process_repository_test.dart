@@ -8,14 +8,16 @@ import 'package:test_demo_bpm/onboarding/data/repositories/onboarding_process_re
 /// (`ProcessRepository.startProcess` / `execTask`), without going through
 /// the bloc or any widget. `OnboardingProcessBloc` itself only adds thin
 /// event → repository-call glue on top of this and is covered by
-/// `flutter analyze`'s type checking; this test is about the BPM logic
-/// actually working end to end.
+/// `flutter analyze`'s type checking; this test is about the BPM logic —
+/// forms, the parallel split/join, the automatic task and the exclusive
+/// gateway — actually working end to end.
 void main() {
   group('OnboardingProcessRepository + MockBpmEngine (no backend involved)', () {
-    test('a low requested amount is auto-approved, skipping manual_review', () async {
+    test('a low requested amount is auto-approved after the parallel uploads join', () async {
       final repo = OnboardingProcessRepository();
 
       var process = await repo.startProcess();
+      expect(process.activeTask, hasLength(1));
       expect(process.activeTaskDefinitionKey, OnboardingTaskKeys.applicantInfo);
 
       process = await repo.execTask(
@@ -26,16 +28,55 @@ void main() {
           'applicantName': 'Alice',
           'applicantEmail': 'alice@example.com',
           'requestedAmount': 50000,
+          'channel': 'agence',
         },
       );
-      expect(process.activeTaskDefinitionKey, OnboardingTaskKeys.uploadDocument);
-      expect(process.processVariables.applicantName, 'Alice');
+
+      // Parallel split: both document uploads are active at once.
+      expect(process.activeTask, hasLength(2));
+      final activeKeys = process.activeTask.map((t) => t.taskDefinitionKey).toSet();
+      expect(
+        activeKeys,
+        {OnboardingTaskKeys.uploadIdDocument, OnboardingTaskKeys.uploadProofOfAddress},
+      );
+
+      final idTask = process.activeTask.firstWhere(
+        (t) => t.taskDefinitionKey == OnboardingTaskKeys.uploadIdDocument,
+      );
+      process = await repo.execTask(
+        processInstanceId: process.processInstanceId,
+        taskInstanceId: idTask.id,
+        outcome: 'submit',
+        body: {'idDocument': 'id.pdf'},
+      );
+
+      // AND-join hasn't fired yet: the sibling branch is still pending, on
+      // the exact same task id it started with.
+      expect(process.activeTask, hasLength(1));
+      expect(process.activeTaskDefinitionKey, OnboardingTaskKeys.uploadProofOfAddress);
+      final proofTask = process.activeTask.first;
 
       process = await repo.execTask(
         processInstanceId: process.processInstanceId,
-        taskInstanceId: process.activeTask.first.id,
+        taskInstanceId: proofTask.id,
         outcome: 'submit',
-        body: {'documentName': 'id.pdf'},
+        body: {'proofOfAddress': 'proof.pdf'},
+      );
+
+      // Both branches done: the join fired, moving on to the automatic
+      // risk-screening service task.
+      expect(process.activeTask, hasLength(1));
+      expect(process.activeTaskDefinitionKey, OnboardingTaskKeys.riskScreening);
+      expect(process.activeTask.first.type, TaskType.serviceTask);
+      expect(process.activeTask.first.form, isNull);
+
+      // The UI would auto-advance this one after a delay; the test does it
+      // directly, the same call `AdvanceAutomaticTask` makes.
+      process = await repo.execTask(
+        processInstanceId: process.processInstanceId,
+        taskInstanceId: process.activeTask.first.id,
+        outcome: 'auto',
+        body: const {},
       );
 
       expect(process.isEnded, isTrue);
@@ -56,14 +97,27 @@ void main() {
           'applicantName': 'Bob',
           'applicantEmail': 'bob@example.com',
           'requestedAmount': 900000,
+          'channel': 'online',
         },
       );
+
+      for (final key in [OnboardingTaskKeys.uploadIdDocument, OnboardingTaskKeys.uploadProofOfAddress]) {
+        final task = process.activeTask.firstWhere((t) => t.taskDefinitionKey == key);
+        process = await repo.execTask(
+          processInstanceId: process.processInstanceId,
+          taskInstanceId: task.id,
+          outcome: 'submit',
+          body: {'idDocument': 'id.pdf', 'proofOfAddress': 'proof.pdf'},
+        );
+      }
+
+      expect(process.activeTaskDefinitionKey, OnboardingTaskKeys.riskScreening);
 
       process = await repo.execTask(
         processInstanceId: process.processInstanceId,
         taskInstanceId: process.activeTask.first.id,
-        outcome: 'submit',
-        body: {'documentName': 'id.pdf'},
+        outcome: 'auto',
+        body: const {},
       );
 
       expect(process.isEnded, isFalse);

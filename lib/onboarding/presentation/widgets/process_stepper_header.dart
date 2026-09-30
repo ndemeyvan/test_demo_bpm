@@ -4,34 +4,41 @@ import '../../business_logic/onboarding_process_bloc.dart';
 import '../../data/models/onboarding_task_keys.dart';
 
 class _StepDef {
-  final String key;
+  final Set<String> keys;
   final String label;
 
-  const _StepDef(this.key, this.label);
+  const _StepDef(this.keys, this.label);
 }
 
 enum _StepStatus { done, current, pending }
 
 /// Purely visual progress indicator — it derives everything it shows from
-/// `state.process.activeTaskDefinitionKey`, the same field
-/// `OnboardingTaskSwitcher` uses to pick a screen, so the stepper and the
-/// visible content can never disagree about where the process is.
+/// `state.process.activeTask`, the same list `OnboardingTaskSwitcher` uses
+/// to pick which screen(s) to show, so the stepper and the visible content
+/// can never disagree about where the process is. "Documents" covers both
+/// branches of the parallel gateway as a single visual phase; "Décision"
+/// is skipped straight to "fin" whenever `risk_screening` auto-approves.
 class ProcessStepperHeader extends StatelessWidget {
   final OnboardingProcessState state;
 
   const ProcessStepperHeader({super.key, required this.state});
 
   static const _steps = [
-    _StepDef(OnboardingTaskKeys.applicantInfo, 'Informations\ndemandeur'),
-    _StepDef(OnboardingTaskKeys.uploadDocument, 'Pièce\njustificative'),
-    _StepDef(OnboardingTaskKeys.manualReview, 'Revue\nmanuelle'),
+    _StepDef({OnboardingTaskKeys.applicantInfo}, 'Informations'),
+    _StepDef(
+      {OnboardingTaskKeys.uploadIdDocument, OnboardingTaskKeys.uploadProofOfAddress},
+      'Documents\n(parallèle)',
+    ),
+    _StepDef({OnboardingTaskKeys.riskScreening}, 'Vérification\nautomatique'),
+    _StepDef({OnboardingTaskKeys.manualReview}, 'Décision'),
   ];
 
   int _currentIndex() {
     final process = state.process;
     if (process == null) return 0;
     if (process.isEnded) return _steps.length;
-    final index = _steps.indexWhere((s) => s.key == process.activeTaskDefinitionKey);
+    final activeKeys = process.activeTask.map((t) => t.taskDefinitionKey).toSet();
+    final index = _steps.indexWhere((s) => s.keys.intersection(activeKeys).isNotEmpty);
     return index < 0 ? 0 : index;
   }
 

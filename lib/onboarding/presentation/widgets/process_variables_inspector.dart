@@ -16,16 +16,22 @@ class ProcessVariablesInspector extends StatelessWidget {
   Widget build(BuildContext context) {
     final vars = process?.processVariables;
 
+    final activeKeys = process?.activeTask.map((t) => t.taskDefinitionKey).join(', ');
+
     final entries = <MapEntry<String, String>>[
       MapEntry('processInstanceId', process?.processInstanceId ?? '—'),
       MapEntry(
-        'activeTaskDefinitionKey',
-        process?.activeTaskDefinitionKey ?? (process?.isEnded == true ? '(ended)' : '—'),
+        'activeTask (× ${process?.activeTask.length ?? 0})',
+        (activeKeys == null || activeKeys.isEmpty)
+            ? (process?.isEnded == true ? '(ended)' : '—')
+            : activeKeys,
       ),
       MapEntry('applicantName', vars?.applicantName ?? '—'),
       MapEntry('applicantEmail', vars?.applicantEmail ?? '—'),
       MapEntry('requestedAmount', '${vars?.requestedAmount ?? '—'}'),
-      MapEntry('documentUploaded', '${vars?.documentUploaded ?? '—'}'),
+      MapEntry('channel', vars?.channel ?? '—'),
+      MapEntry('idDocumentUploaded', '${vars?.idDocumentUploaded ?? '—'}'),
+      MapEntry('proofOfAddressUploaded', '${vars?.proofOfAddressUploaded ?? '—'}'),
       MapEntry('riskScore', '${vars?.riskScore ?? '—'}'),
       MapEntry('reviewDecision', vars?.reviewDecision ?? '—'),
       MapEntry('autoApproved', '${vars?.autoApproved ?? '—'}'),

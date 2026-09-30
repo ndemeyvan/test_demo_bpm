@@ -55,9 +55,12 @@ class _OnboardingProcessView extends StatelessWidget {
                     children: [
                       Text(
                         "Cet écran illustre comment un process BPM pilote l'affichage : "
-                        "chaque tâche active du moteur détermine l'écran affiché, et les "
-                        "variables du process circulent d'une tâche à l'autre. Le moteur "
-                        "BPM est ici entièrement simulé (mock), sans backend.",
+                        'chaque tâche active du moteur détermine le(s) écran(s) affiché(s), '
+                        'via des formulaires dynamiques (métadonnées, pas de champs codés en '
+                        'dur), avec une passerelle parallèle (deux documents à envoyer en même '
+                        "temps), une tâche automatique (score de risque) et une passerelle "
+                        "conditionnelle. Le moteur BPM est ici entièrement simulé (mock), sans "
+                        "backend.",
                         style: Theme.of(context).textTheme.bodyMedium,
                       ),
                       const SizedBox(height: 20),
