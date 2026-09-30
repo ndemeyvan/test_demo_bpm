@@ -1,0 +1,57 @@
+{
+  "processInstanceId": "onboarding-1",
+  "processDefinitionKey": "merchant_onboarding_demo",
+  "isEnded": false,
+  "startTime": "2026-09-30T16:56:34.559528",
+  "processVariables": {
+    "applicantName": "Alice Dupont",
+    "applicantEmail": "alice.dupont@example.com",
+    "requestedAmount": 50000,
+    "channel": "agence",
+    "idDocumentUploaded": true,
+    "idDocumentName": "cni_alice.pdf",
+    "proofOfAddressUploaded": null,
+    "proofOfAddressName": null,
+    "riskScore": null,
+    "reviewDecision": null,
+    "rejectionReason": null,
+    "autoApproved": null
+  },
+  "activeTask": [
+    {
+      "id": "onboarding-1-task-3",
+      "taskDefinitionKey": "upload_proof_of_address",
+      "name": "Justificatif de domicile",
+      "description": "Tâche « upload_proof_of_address » — l'autre branche parallèle. Le process attend que les deux soient complétées (jointure) avant de continuer.",
+      "processInstanceId": "onboarding-1",
+      "createTime": "2026-09-30T16:56:34.559523",
+      "processVariables": {
+        "applicantName": "Alice Dupont",
+        "applicantEmail": "alice.dupont@example.com",
+        "requestedAmount": 50000,
+        "channel": "agence",
+        "idDocumentUploaded": true,
+        "idDocumentName": "cni_alice.pdf",
+        "proofOfAddressUploaded": null,
+        "proofOfAddressName": null,
+        "riskScore": null,
+        "reviewDecision": null,
+        "rejectionReason": null,
+        "autoApproved": null
+      },
+      "type": "userTask",
+      "form": {
+        "fields": [
+          {
+            "key": "proofOfAddress",
+            "label": "Justificatif de domicile",
+            "type": "document",
+            "required": true,
+            "hint": null,
+            "options": null
+          }
+        ]
+      }
+    }
+  ]
+}

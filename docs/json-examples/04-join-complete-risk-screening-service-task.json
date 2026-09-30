@@ -1,0 +1,46 @@
+{
+  "processInstanceId": "onboarding-1",
+  "processDefinitionKey": "merchant_onboarding_demo",
+  "isEnded": false,
+  "startTime": "2026-09-30T16:56:35.114447",
+  "processVariables": {
+    "applicantName": "Alice Dupont",
+    "applicantEmail": "alice.dupont@example.com",
+    "requestedAmount": 50000,
+    "channel": "agence",
+    "idDocumentUploaded": true,
+    "idDocumentName": "cni_alice.pdf",
+    "proofOfAddressUploaded": true,
+    "proofOfAddressName": "facture_edf_alice.pdf",
+    "riskScore": null,
+    "reviewDecision": null,
+    "rejectionReason": null,
+    "autoApproved": null
+  },
+  "activeTask": [
+    {
+      "id": "onboarding-1-task-4",
+      "taskDefinitionKey": "risk_screening",
+      "name": "Vérification automatique du risque",
+      "description": "Tâche automatique (service task) : aucune interaction humaine, le moteur calcule le score de risque lui-même.",
+      "processInstanceId": "onboarding-1",
+      "createTime": "2026-09-30T16:56:35.114434",
+      "processVariables": {
+        "applicantName": "Alice Dupont",
+        "applicantEmail": "alice.dupont@example.com",
+        "requestedAmount": 50000,
+        "channel": "agence",
+        "idDocumentUploaded": true,
+        "idDocumentName": "cni_alice.pdf",
+        "proofOfAddressUploaded": true,
+        "proofOfAddressName": "facture_edf_alice.pdf",
+        "riskScore": null,
+        "reviewDecision": null,
+        "rejectionReason": null,
+        "autoApproved": null
+      },
+      "type": "serviceTask",
+      "form": null
+    }
+  ]
+}

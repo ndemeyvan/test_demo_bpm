@@ -1,0 +1,90 @@
+{
+  "processInstanceId": "onboarding-1",
+  "processDefinitionKey": "merchant_onboarding_demo",
+  "isEnded": false,
+  "startTime": "2026-09-30T16:56:33.414895",
+  "processVariables": {
+    "applicantName": null,
+    "applicantEmail": null,
+    "requestedAmount": null,
+    "channel": null,
+    "idDocumentUploaded": null,
+    "idDocumentName": null,
+    "proofOfAddressUploaded": null,
+    "proofOfAddressName": null,
+    "riskScore": null,
+    "reviewDecision": null,
+    "rejectionReason": null,
+    "autoApproved": null
+  },
+  "activeTask": [
+    {
+      "id": "onboarding-1-task-1",
+      "taskDefinitionKey": "applicant_info",
+      "name": "Informations demandeur",
+      "description": "Tâche « applicant_info » : ces données sont écrites dans les variables du process.",
+      "processInstanceId": "onboarding-1",
+      "createTime": "2026-09-30T16:56:33.414388",
+      "processVariables": {
+        "applicantName": null,
+        "applicantEmail": null,
+        "requestedAmount": null,
+        "channel": null,
+        "idDocumentUploaded": null,
+        "idDocumentName": null,
+        "proofOfAddressUploaded": null,
+        "proofOfAddressName": null,
+        "riskScore": null,
+        "reviewDecision": null,
+        "rejectionReason": null,
+        "autoApproved": null
+      },
+      "type": "userTask",
+      "form": {
+        "fields": [
+          {
+            "key": "applicantName",
+            "label": "Nom du demandeur",
+            "type": "text",
+            "required": true,
+            "hint": null,
+            "options": null
+          },
+          {
+            "key": "applicantEmail",
+            "label": "E-mail",
+            "type": "email",
+            "required": true,
+            "hint": null,
+            "options": null
+          },
+          {
+            "key": "requestedAmount",
+            "label": "Montant demandé",
+            "type": "number",
+            "required": true,
+            "hint": "Ex : 200000",
+            "options": null
+          },
+          {
+            "key": "channel",
+            "label": "Canal de la demande",
+            "type": "select",
+            "required": true,
+            "hint": null,
+            "options": [
+              {
+                "value": "online",
+                "label": "En ligne"
+              },
+              {
+                "value": "agence",
+                "label": "En agence"
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}

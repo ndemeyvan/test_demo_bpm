@@ -1,0 +1,21 @@
+{
+  "processInstanceId": "onboarding-1",
+  "processDefinitionKey": "merchant_onboarding_demo",
+  "isEnded": true,
+  "startTime": "2026-09-30T16:56:35.669659",
+  "processVariables": {
+    "applicantName": "Alice Dupont",
+    "applicantEmail": "alice.dupont@example.com",
+    "requestedAmount": 50000,
+    "channel": "agence",
+    "idDocumentUploaded": true,
+    "idDocumentName": "cni_alice.pdf",
+    "proofOfAddressUploaded": true,
+    "proofOfAddressName": "facture_edf_alice.pdf",
+    "riskScore": 15,
+    "reviewDecision": "approved",
+    "rejectionReason": null,
+    "autoApproved": true
+  },
+  "activeTask": []
+}

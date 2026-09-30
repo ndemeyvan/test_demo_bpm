@@ -1,0 +1,4 @@
+{
+  "errorCode": "form-validation",
+  "message": "Le nom et le montant demandé sont obligatoires."
+}

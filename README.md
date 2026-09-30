@@ -13,6 +13,95 @@ flutter run -d chrome   # ou macos, etc.
 flutter test
 ```
 
+## Le JSON échangé — exemples réels
+
+`MockBpmService` échange réellement du JSON (`jsonEncode`/`jsonDecode`, pas
+juste des objets Dart passés par référence — voir plus bas). Pour ne pas
+avoir à lancer l'app pour le voir, [`docs/json-examples/`](docs/json-examples)
+contient de vrais payloads, **générés par le code lui-même** (pas tapés à
+la main) via `dart run tool/generate_json_examples.dart` :
+
+| Fichier | Ce qu'il montre |
+|---|---|
+| [`01-start.json`](docs/json-examples/01-start.json) | Démarrage : une tâche active (`applicant_info`), avec son formulaire (4 champs, dont un `select`) |
+| [`02-parallel-split-two-active-tasks.json`](docs/json-examples/02-parallel-split-two-active-tasks.json) | Après soumission du formulaire : **deux tâches actives en même temps** (passerelle parallèle) |
+| [`03-one-branch-done-join-still-pending.json`](docs/json-examples/03-one-branch-done-join-still-pending.json) | Une branche complétée, l'autre encore en attente — la jointure n'a pas encore eu lieu |
+| [`04-join-complete-risk-screening-service-task.json`](docs/json-examples/04-join-complete-risk-screening-service-task.json) | Les deux branches faites : tâche automatique (`"type": "userTask"` → ici service task, `"form": null`) |
+| [`05-auto-approved-end.json`](docs/json-examples/05-auto-approved-end.json) | Fin de process, auto-approuvé (`"activeTask": []`, `"isEnded": true`) |
+| [`06-manual-review-required.json`](docs/json-examples/06-manual-review-required.json) | Score de risque élevé → bascule vers `manual_review` |
+| [`07-rejected-end.json`](docs/json-examples/07-rejected-end.json) | Refusé après revue manuelle, avec le motif |
+| [`08-form-validation-error.json`](docs/json-examples/08-form-validation-error.json) | Erreur métier : formulaire incomplet |
+| [`09-stale-task-error.json`](docs/json-examples/09-stale-task-error.json) | Erreur métier : id de tâche périmé (`com-task-0002`) |
+
+Exemple — juste après le démarrage (`01-start.json`), une seule tâche
+active avec son formulaire :
+
+```json
+{
+  "processInstanceId": "onboarding-1",
+  "processDefinitionKey": "merchant_onboarding_demo",
+  "isEnded": false,
+  "startTime": "2026-09-30T16:56:33.414895",
+  "processVariables": {
+    "applicantName": null,
+    "applicantEmail": null,
+    "requestedAmount": null,
+    "channel": null,
+    "riskScore": null,
+    "reviewDecision": null
+  },
+  "activeTask": [
+    {
+      "id": "onboarding-1-task-1",
+      "taskDefinitionKey": "applicant_info",
+      "name": "Informations demandeur",
+      "type": "userTask",
+      "form": {
+        "fields": [
+          { "key": "applicantName", "label": "Nom du demandeur", "type": "text", "required": true },
+          { "key": "applicantEmail", "label": "E-mail", "type": "email", "required": true },
+          { "key": "requestedAmount", "label": "Montant demandé", "type": "number", "required": true },
+          {
+            "key": "channel",
+            "label": "Canal de la demande",
+            "type": "select",
+            "required": true,
+            "options": [
+              { "value": "online", "label": "En ligne" },
+              { "value": "agence", "label": "En agence" }
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}
+```
+
+(champs tronqués ici pour la lisibilité — le fichier complet a tout,
+`processVariables` répété dans chaque tâche inclus, exactement comme le
+produit `Process.toJson`.)
+
+Et `02-parallel-split-two-active-tasks.json` — le même process, une fois le
+formulaire ci-dessus soumis : `"activeTask"` contient maintenant **deux**
+tâches (`upload_id_document` et `upload_proof_of_address`), chacune avec
+son propre formulaire, actives en même temps :
+
+```json
+{
+  "activeTask": [
+    { "taskDefinitionKey": "upload_id_document", "form": { "fields": [{ "key": "idDocument", "type": "document", "required": true }] } },
+    { "taskDefinitionKey": "upload_proof_of_address", "form": { "fields": [{ "key": "proofOfAddress", "type": "document", "required": true }] } }
+  ]
+}
+```
+
+Pour régénérer ces fichiers après une modification du moteur :
+
+```bash
+dart run tool/generate_json_examples.dart
+```
+
 ## Le process de démo
 
 "Onboarding marchand" :

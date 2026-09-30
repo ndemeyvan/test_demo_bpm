@@ -1,0 +1,21 @@
+{
+  "processInstanceId": "onboarding-2",
+  "processDefinitionKey": "merchant_onboarding_demo",
+  "isEnded": true,
+  "startTime": "2026-09-30T16:56:38.989500",
+  "processVariables": {
+    "applicantName": "Bernard Kouassi",
+    "applicantEmail": "bernard.kouassi@example.com",
+    "requestedAmount": 900000,
+    "channel": "online",
+    "idDocumentUploaded": true,
+    "idDocumentName": "cni_bernard.pdf",
+    "proofOfAddressUploaded": true,
+    "proofOfAddressName": "facture_bernard.pdf",
+    "riskScore": 88,
+    "reviewDecision": "rejected",
+    "rejectionReason": "Justificatif de domicile illisible",
+    "autoApproved": false
+  },
+  "activeTask": []
+}
